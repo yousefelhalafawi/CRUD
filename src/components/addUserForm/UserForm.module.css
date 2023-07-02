@@ -1,0 +1,18 @@
+.form {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin-top: 20px;
+  }
+  
+  .formRow {
+    display: flex;
+    flex-wrap: wrap;
+    margin-bottom: 10px;
+  }
+  
+  .formRow > * {
+    margin-right: 10px;
+    margin-bottom: 10px;
+  }
+  
