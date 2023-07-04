@@ -1,25 +1,37 @@
-import React from 'react';
+import { useNavigate } from "react-router-dom";
+import { toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 import UserForm from "../../components/addUserForm/userform";
 
 function AddPage() {
+  const navigate = useNavigate();
+
   const handleSubmit = (formData: any) => {
-    fetch('http://localhost:8080/api/v1/users/', {
-      method: 'POST',
-      body: JSON.stringify(formData),
-      headers: {
-        'Content-Type': 'application/json'
-      }
+    const form_data = new FormData();
+    Object.keys(formData).forEach((key) => {
+      form_data.append(key, formData[key]);
+    });
+
+    fetch("http://localhost:8080/api/v1/users/", {
+      method: "POST",
+      body: form_data,
     })
-      .then(response => response.json())
-      .then(data => {
-        console.log(formData);
-        console.log(data);
-        // Handle successful response
+      .then((response) => response.json())
+      .then((data) => {
+        console.log(data)
+        if (data.message === "user added") {
+          // Show a success toast notification
+          toast.success("User added successfully");
+
+          // Navigate to "/"
+          navigate("/");
+        } else {
+          // Show an error toast notification
+          toast.error("Error: " + data.message);
+        }
       })
-      .catch(error => {
-        console.log(formData);
+      .catch((error) => {
         console.error(error);
-        // Handle error
       });
   };
 
@@ -31,31 +43,3 @@ function AddPage() {
 }
 
 export default AddPage;
-
-
-
-// import UserForm from "../../components/addUserForm/userform";
-// import axios from 'axios';
-
-// function AddPage() {
-//    const handleSubmit = (formData: any) => {
-//   axios.post('http://localhost:8080/api/v1/users/', formData)
-  
-//     .then(response => {
-//       console.log(formData)
-//       // Handle successful response
-//       console.log(response.data);
-//     })
-//     .catch(error => {
-//       // Handle error
-//       console.log(formData)
-
-//       console.error(error);
-//     });
-// };
-//     return ( <>
-//       <UserForm onSubmit={handleSubmit} />
-//     </>);
-// }
-
-// export default AddPage;

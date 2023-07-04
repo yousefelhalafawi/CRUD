@@ -2,7 +2,7 @@ import React from 'react';
 import { Card, CardMedia, CardContent, Typography, Button } from '@mui/material';
 import { CardActionArea, CardActions } from '@mui/material';
 import { Link } from 'react-router-dom';
-import axios from 'axios';
+import  { useEffect } from 'react';
 
 import styles from './UserCard.module.css';
 
@@ -15,10 +15,10 @@ interface UserCardProps {
 }
 
 const UserCard: React.FC<UserCardProps> = ({ imageSrc, title, onClick, id, onDelete }) => {
-  const handleImageError = (e: React.SyntheticEvent<HTMLImageElement, Event>) => {
-    // Handle the error by setting a fallback image source
-    e.currentTarget.src = '/path/to/fallback/image.jpg';
-  };
+  // useEffect(() => {
+  //   console.log(title)
+  // }, []);
+
 
   return (
     <Card className={styles.card}>
@@ -27,7 +27,6 @@ const UserCard: React.FC<UserCardProps> = ({ imageSrc, title, onClick, id, onDel
         className={styles.media}
         image={imageSrc}
         alt="Image"
-        onError={handleImageError} // Handle the image error
       />
       <CardContent>
         <Typography gutterBottom variant="h5" component="div" className={styles.title}>
@@ -40,7 +39,7 @@ const UserCard: React.FC<UserCardProps> = ({ imageSrc, title, onClick, id, onDel
             VIEW
           </Button>
         </Link>
-        <Button size="small" color="warning" onClick={onDelete}>
+        <Button size="small" color="error" onClick={onDelete}>
           Delete
         </Button>
       </CardActions>
@@ -48,4 +47,4 @@ const UserCard: React.FC<UserCardProps> = ({ imageSrc, title, onClick, id, onDel
   );
 };
 
-export default UserCard;
+export default React.memo(UserCard);
