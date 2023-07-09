@@ -1,0 +1,13 @@
+.navbar {
+  background-color: black !important;
+}
+
+.link {
+  margin-right: 1rem;
+  text-decoration: none;
+  color: #fff;
+  transition: color 0.1s ease-in-out; 
+  &:hover {
+    color: gray;
+  }
+}

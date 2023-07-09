@@ -1,0 +1,19 @@
+.card {
+  max-width: 345px;
+  margin: auto;
+  margin-top: 10px;
+  transition: transform 0.2s ease-in-out;
+}
+
+.card:hover {
+  transform: scale(1.1);
+}
+
+.media {
+  height: 140px;
+}
+
+.title {
+  font-size: 1.5rem;
+  font-weight: bold;
+}

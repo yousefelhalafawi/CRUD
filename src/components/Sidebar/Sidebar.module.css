@@ -1,0 +1,21 @@
+.sidebar-item-enter {
+  opacity: 0;
+  transform: translateX(-100%);
+}
+
+.sidebar-item-enter-active {
+  opacity: 1;
+  transform: translateX(0%);
+  transition: opacity 300ms, transform 300ms, background-color 300ms;
+}
+
+.sidebar-item-exit {
+  opacity: 1;
+  transform: translateX(0%);
+}
+
+.sidebar-item-exit-active {
+  opacity: 0;
+  transform: translateX(-100%);
+  transition: opacity 300ms, transform 300ms, background-color 300ms;
+}

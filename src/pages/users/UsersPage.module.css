@@ -1,0 +1,11 @@
+.container {
+  margin-top: 5%;
+  margin-left: 10%;
+  display: flex;
+  /* justify-content: center;
+  align-items: center; */
+}
+.badge {
+  background-color: #ed6e3e !important;
+  margin-left: 2%;
+}
