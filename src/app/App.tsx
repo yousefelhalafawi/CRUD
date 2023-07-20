@@ -5,29 +5,23 @@ import { BrowserRouter, Route, Routes, Link } from "react-router-dom";
 import UsersPage from "../pages/users/allUsersPage";
 import ErrorMe from "../components/error/error";
 import AddPage from "../pages/addUser/addPage";
-import UserPage from "../pages/userPage/userPage";
+import UserPage from "../pages/EdituserPage/userPage";
 import styles from "./App.module.css";
-import {
-  toggleNavigationFasle,
-  toggleNavigationTrue,
-} from "../state/navigationSlice";
 import "./Scrollbar.css";
-import Sidebar from "../components/Sidebar/Sidebar";
+import MySidebar from "../components/mySidebar/mySidebar";
+import ViewUser from "../pages/ViewUser/ViewUser";
 const App: React.FC = () => {
-  // const { data } = useFetchData("https://fakestoreapi.com/products");
-  // console.log(data);
-
   return (
     <BrowserRouter>
-      <div style={{ display: "flex" }}>
-        <Sidebar />
+      <div className="d-flex">
+        <MySidebar />
 
-        <div style={{ flexGrow: 1 }}>
+        <div style={{ flexGrow: 1 }} className={styles.all}>
           <Routes>
             <Route path="/" element={<UsersPage />} />
             <Route path="/add" element={<AddPage />} />
             <Route path="/user/:id" element={<UserPage />} />
-            <Route path="/deleted-users" element={<UserPage />} />
+            <Route path="/viewUser/:id" element={<ViewUser />} />
 
             <Route path="*" element={<ErrorMe />} />
           </Routes>

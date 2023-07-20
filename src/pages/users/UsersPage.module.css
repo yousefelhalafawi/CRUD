@@ -1,11 +1,19 @@
 .container {
-  margin-top: 5%;
   margin-left: 10%;
   display: flex;
-  /* justify-content: center;
-  align-items: center; */
+  align-items: center;
+  padding-top: 5%;
 }
 .badge {
   background-color: #ed6e3e !important;
   margin-left: 2%;
+}
+.test {
+  height: 100vh;
+}
+.test2 {
+  height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
 }

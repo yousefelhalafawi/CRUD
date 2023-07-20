@@ -1,19 +1,22 @@
-
 .gridContainer {
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap: 16px;
-  }
-  
-  .gridItem {
-    display: flex;
-    align-items: flex-end;
-  }
-  
-  .submitButton {
-    margin-top: 16px;
-    display: flex;
-    justify-content: flex-end;
-  }
-  
-  
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 16px;
+}
+
+.gridItem {
+  display: flex;
+  align-items: flex-end;
+}
+
+.submitButton {
+  margin-top: 16px;
+  display: flex;
+  justify-content: flex-end;
+}
+
+.container {
+  background-color: #eee;
+  /* width: 100vw; */
+  height: 100%;
+}

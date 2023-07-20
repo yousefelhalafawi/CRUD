@@ -2,7 +2,7 @@ import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import UserForm from "../../components/addUserForm/userform";
-
+import styles from "./AddPage.module.css";
 function AddPage() {
   const navigate = useNavigate();
 
@@ -19,9 +19,10 @@ function AddPage() {
       .then((response) => response.json())
       .then((data) => {
         console.log(data);
-        if (data.data) {
+        if (data.result) {
           // Show a success toast notification
           toast.success("User added successfully");
+          console.log(form_data);
 
           // Navigate to "/"
           navigate("/");
@@ -37,9 +38,9 @@ function AddPage() {
   };
 
   return (
-    <>
+    <div className={styles.all}>
       <UserForm onSubmit={handleSubmit} />
-    </>
+    </div>
   );
 }
 

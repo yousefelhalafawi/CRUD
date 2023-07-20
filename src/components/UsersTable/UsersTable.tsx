@@ -7,14 +7,13 @@ import {
   EllipsisOutlined,
 } from "@ant-design/icons";
 import axios from "axios";
-import { Link } from "react-router-dom";
 import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 
 const UsersTable = () => {
   const [users, setUsers] = useState<{ firstName: string }[]>([]);
   const [loading, setLoading] = useState(true);
-  const [pagination, setPagination] = useState({ current: 1, pageSize: 7 });
+  const [pagination, setPagination] = useState({ current: 1, pageSize: 6 });
   const [searchText, setSearchText] = useState("");
   const navigate = useNavigate();
 
@@ -45,7 +44,7 @@ const UsersTable = () => {
   const handleActionClick = (userId: any, action: any) => {
     console.log("Action:", action, "User ID:", userId);
     if (action === "view") {
-      navigate(`/user/` + userId);
+      navigate(`/viewUser/` + userId);
     } else if (action === "delete") {
       axios
         .delete(`http://localhost:8080/api/v1/users/${userId}`)
@@ -96,7 +95,7 @@ const UsersTable = () => {
       key: "name",
       render: (text: any, record: any) => (
         <Space direction="horizontal">
-          <span>{record.firstName + " " + record.thirdName}</span>
+          <span>{record.firstName + " "}</span>
         </Space>
       ),
     },

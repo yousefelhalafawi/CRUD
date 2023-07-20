@@ -1,18 +1,5 @@
 import React, { useState } from "react";
-import {
-  TextField,
-  Button,
-  Grid,
-  Box,
-  Typography,
-  Container,
-  Avatar,
-  InputLabel,
-  MenuItem,
-  Select,
-  SelectChangeEvent,
-} from "@mui/material";
-import { createTheme, ThemeProvider } from "@mui/material/styles";
+import styles from "./UserForm.module.css";
 
 interface UserFormProps {
   onSubmit: (formData: FormData) => void;
@@ -29,8 +16,6 @@ interface FormData {
   gender: string;
   image: File | null;
 }
-
-const defaultTheme = createTheme();
 
 const UserForm: React.FC<UserFormProps> = ({ onSubmit }) => {
   const [formData, setFormData] = useState<FormData>({
@@ -58,7 +43,7 @@ const UserForm: React.FC<UserFormProps> = ({ onSubmit }) => {
   };
 
   // Create a new handleSelectChange function to handle SelectChangeEvent<string>
-  const handleSelectChange = (e: SelectChangeEvent<string>) => {
+  const handleSelectChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const { name, value } = e.target;
     setFormData((prevData) => ({ ...prevData, [name]: value }));
   };
@@ -76,145 +61,155 @@ const UserForm: React.FC<UserFormProps> = ({ onSubmit }) => {
   const namePattern = /^[A-Za-z]+$/;
 
   return (
-    <ThemeProvider theme={defaultTheme}>
-      <Container component="main" maxWidth="xs">
-        <Box
-          sx={{
-            marginTop: 1,
-            display: "flex",
-            flexDirection: "column",
-            alignItems: "center",
-          }}
-        >
-          <Avatar sx={{ m: 1, bgcolor: "secondary.main" }}></Avatar>
-          <Typography component="h1" variant="h5">
-            Add User
-          </Typography>
-          <Box
-            component="form"
-            noValidate
-            onSubmit={handleSubmit}
-            sx={{ mt: 3 }}
-          >
-            <Grid container spacing={2}>
-              <Grid item xs={12} sm={4}>
-                <TextField
-                  autoComplete="given-name"
-                  name="firstName"
-                  required
-                  fullWidth
+    <div className="container mt-4">
+      <div className="row">
+        <div className="col-md-6 offset-md-3">
+          <form onSubmit={handleSubmit} className={styles.all}>
+            <h2 className="text-center">Add User</h2>
+            <div className="row mb-3">
+              <div className="col">
+                <label htmlFor="firstName" className="form-label">
+                  First Name
+                </label>
+                <input
+                  type="text"
+                  className="form-control"
                   id="firstName"
-                  label="First Name"
-                  autoFocus
+                  name="firstName"
                   value={formData.firstName}
                   onChange={handleChange}
-                  inputProps={{ pattern: namePattern.source }}
-                />
-              </Grid>
-              <Grid item xs={12} sm={4}>
-                <TextField
+                  pattern={namePattern.source}
                   required
-                  fullWidth
+                />
+              </div>
+              <div className="col">
+                <label htmlFor="middleName" className="form-label">
+                  Middle Name
+                </label>
+                <input
+                  type="text"
+                  className="form-control"
                   id="middleName"
-                  label="Middle Name"
                   name="middleName"
-                  autoComplete="additional-name"
                   value={formData.middleName}
                   onChange={handleChange}
-                  inputProps={{ pattern: namePattern.source }}
-                />
-              </Grid>
-              <Grid item xs={12} sm={4}>
-                <TextField
+                  pattern={namePattern.source}
                   required
-                  fullWidth
+                />
+              </div>
+              <div className="col">
+                <label htmlFor="thirdName" className="form-label">
+                  Third Name
+                </label>
+                <input
+                  type="text"
+                  className="form-control"
                   id="thirdName"
-                  label="Third Name"
                   name="thirdName"
-                  autoComplete="additional-name"
                   value={formData.thirdName}
                   onChange={handleChange}
-                  inputProps={{ pattern: namePattern.source }}
-                />
-              </Grid>
-              <Grid item xs={12}>
-                <TextField
+                  pattern={namePattern.source}
                   required
-                  fullWidth
-                  id="email"
-                  label="Email Address"
-                  name="email"
-                  autoComplete="email"
-                  value={formData.email}
-                  onChange={handleChange}
                 />
-              </Grid>
-              <Grid item xs={12}>
-                <TextField
-                  required
-                  fullWidth
-                  id="ssn"
-                  label="SSN"
-                  name="ssn"
-                  type="number"
-                  value={formData.ssn ? formData.ssn.toString() : ""}
-                  onChange={handleChange}
-                />
-              </Grid>
-              <Grid item xs={12}>
-                <InputLabel>Birth Date</InputLabel>
-                <TextField
+              </div>
+            </div>
+            <div className="mb-3">
+              <label htmlFor="email" className="form-label">
+                Email Address
+              </label>
+              <input
+                type="email"
+                className="form-control"
+                id="email"
+                name="email"
+                value={formData.email}
+                onChange={handleChange}
+                required
+              />
+            </div>
+            <div className="mb-3">
+              <label htmlFor="ssn" className="form-label">
+                SSN
+              </label>
+              <input
+                type="number"
+                className="form-control"
+                id="ssn"
+                name="ssn"
+                value={formData.ssn ? formData.ssn.toString() : ""}
+                onChange={handleChange}
+                required
+              />
+            </div>
+
+            <div className="row">
+              <div className="mb-3 col">
+                <label htmlFor="birthDate" className="form-label">
+                  Birth Date
+                </label>
+                <input
                   type="date"
+                  className="form-control"
+                  id="birthDate"
                   name="birthDate"
-                  // label="Birth Date"
                   value={formData.birthDate || ""}
                   onChange={handleChange}
                   required
                 />
-              </Grid>
-              <Grid item xs={12}>
-                <TextField
-                  label="Address"
-                  name="address"
-                  value={formData.address}
-                  onChange={handleChange}
+              </div>
+              <div className="mb-3 col">
+                <label htmlFor="gender" className="form-label">
+                  Gender
+                </label>
+                <select
+                  className="form-control"
+                  id="gender"
+                  name="gender"
+                  value={formData.gender || "male"}
+                  onChange={handleSelectChange}
                   required
-                />
-              </Grid>
-              <Grid item xs={12}>
-                <div>
-                  <InputLabel>Gender</InputLabel>
-                  <Select
-                    name="gender"
-                    value={formData.gender || "male"}
-                    onChange={handleSelectChange}
-                  >
-                    <MenuItem value="male">Male</MenuItem>
-                    <MenuItem value="female">Female</MenuItem>
-                  </Select>
-                </div>
-              </Grid>
-              <Grid item xs={12}>
-                <input
-                  type="file"
-                  onChange={handleImageChange}
-                  accept="image/*"
-                />
-              </Grid>
-            </Grid>
-            <Button
-              type="submit"
-              fullWidth
-              variant="contained"
-              color="primary"
-              sx={{ mt: 3, mb: 2 }}
-            >
-              Submit
-            </Button>
-          </Box>
-        </Box>
-      </Container>
-    </ThemeProvider>
+                >
+                  <option value="male">Male</option>
+                  <option value="female">Female</option>
+                </select>
+              </div>
+            </div>
+
+            <div className="mb-3">
+              <label htmlFor="address" className="form-label">
+                Address
+              </label>
+              <input
+                type="text"
+                className="form-control"
+                id="address"
+                name="address"
+                value={formData.address}
+                onChange={handleChange}
+                required
+              />
+            </div>
+            <div className="mb-3">
+              <label htmlFor="image" className="form-label">
+                Image
+              </label>
+              <input
+                type="file"
+                className="form-control"
+                id="image"
+                onChange={handleImageChange}
+                accept="image/*"
+              />
+            </div>
+            <div className="text-center">
+              <button type="submit" className="btn btn-primary">
+                Submit
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
   );
 };
 
