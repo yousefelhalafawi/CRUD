@@ -20,9 +20,6 @@ const UserPage = () => {
   const { patchData } = usePatchRequest(
     "http://localhost:8080/api/v1/users/" + id
   );
-  const { fetchedData, loading, error } = useGetRequest(
-    "http://example.com/api/data"
-  );
 
   const navigate = useNavigate();
   interface User {

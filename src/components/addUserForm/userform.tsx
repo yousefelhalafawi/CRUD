@@ -1,4 +1,5 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+import axios from "axios";
 import styles from "./UserForm.module.css";
 
 interface UserFormProps {
@@ -6,51 +7,75 @@ interface UserFormProps {
 }
 
 interface FormData {
-  firstName: string;
-  middleName: string;
-  thirdName: string;
-  email: string;
-  ssn: number | null;
-  birthDate: string | null;
-  address: string;
-  gender: string;
-  image: File | null;
+  [key: string]: string | number | null | File;
+}
+
+interface AttributeOption {
+  label: string;
+  control: string;
+  controlType: string;
+  placeholder?: string;
+  validation?: {
+    [key: string]: string | boolean;
+  };
+  values?: string[];
+}
+
+interface Attribute {
+  name: string;
+  type: string;
+  options?: AttributeOption;
+}
+
+interface OptionsResponse {
+  message: string;
+  result: {
+    attributes: Attribute[];
+  };
 }
 
 const UserForm: React.FC<UserFormProps> = ({ onSubmit }) => {
-  const [formData, setFormData] = useState<FormData>({
-    firstName: "",
-    middleName: "",
-    thirdName: "",
-    email: "",
-    ssn: null,
-    birthDate: null,
-    address: "",
-    gender: "",
-    image: null,
-  });
+  const [formData, setFormData] = useState<FormData>({});
+  const [options, setOptions] = useState<Attribute[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  useEffect(() => {
+    const fetchOptions = async () => {
+      try {
+        const response = await axios.get<OptionsResponse>(
+          "http://localhost:8080/api/v1/users/options"
+        );
+        const attributes = response.data.result.attributes;
+        const initialFormData: FormData = {};
+        for (const attribute of attributes) {
+          initialFormData[attribute.name] = "";
+        }
+        setFormData(initialFormData);
+        setOptions(attributes);
+        setLoading(false);
+      } catch (error) {
+        console.error("Error fetching options:", error);
+        setLoading(false);
+      }
+    };
+    fetchOptions();
+  }, []);
+
+  const handleChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
+  ) => {
     const { name, value } = e.target;
-    if (name === "birthDate") {
-      setFormData((prevData) => ({ ...prevData, [name]: value }));
-    } else if (name === "ssn") {
-      const numberValue = parseInt(value, 10);
-      setFormData((prevData) => ({ ...prevData, [name]: numberValue }));
+    let sanitizedValue: string | number | null | File;
+
+    // Check if the value is null or a File
+    if (value === null) {
+      sanitizedValue = value;
     } else {
-      setFormData((prevData) => ({ ...prevData, [name]: value }));
+      // If it's not null or a File, convert to string or number as appropriate
+      sanitizedValue = value === "" ? null : Number(value) || String(value);
     }
-  };
 
-  // Create a new handleSelectChange function to handle SelectChangeEvent<string>
-  const handleSelectChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    const { name, value } = e.target;
-    setFormData((prevData) => ({ ...prevData, [name]: value }));
-  };
-
-  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0] || null;
-    setFormData((prevData) => ({ ...prevData, image: file }));
+    setFormData((prevData) => ({ ...prevData, [name]: sanitizedValue }));
   };
 
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
@@ -58,7 +83,93 @@ const UserForm: React.FC<UserFormProps> = ({ onSubmit }) => {
     onSubmit(formData);
   };
 
-  const namePattern = /^[A-Za-z]+$/;
+  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0] || null;
+    setFormData((prevData) => ({ ...prevData, image: file }));
+  };
+
+  const renderFormFields = () => {
+    if (loading) {
+      return <p>Loading...</p>;
+    }
+
+    const rows: JSX.Element[] = [];
+    let currentRowInputs: JSX.Element[] = [];
+
+    options.forEach((attribute) => {
+      const { name, type, options: attributeOptions } = attribute;
+      const { label, controlType, placeholder, validation } =
+        attributeOptions || {};
+
+      const inputProps = {
+        className: "form-control",
+        id: name,
+        name: name,
+        value: String(formData[name] || ""),
+        onChange: handleChange,
+        placeholder: placeholder,
+        required: validation?.required ? true : false, // Convert to boolean
+        pattern: validation?.pattern ? String(validation.pattern) : undefined,
+      };
+
+      // Handle supported control types
+      if (
+        controlType === "text" ||
+        controlType === "email" ||
+        controlType === "number" ||
+        controlType === "date"
+      ) {
+        currentRowInputs.push(
+          <div key={name} className="col-md-6 mb-3">
+            <label htmlFor={name} className="form-label">
+              {label}
+            </label>
+
+            <input type={controlType} {...inputProps} />
+          </div>
+        );
+      } else if (controlType === "radio" && name === "gender") {
+        // Handle radio control type for "gender" field
+        currentRowInputs.push(
+          <div key={name} className="col-md-6 mb-3">
+            <label className="form-label">{label}</label>
+            {attributeOptions?.values?.map((value: string) => (
+              <div key={value} className="form-check">
+                <input
+                  type="radio"
+                  className="form-check-input"
+                  name={name}
+                  value={value}
+                  checked={formData[name] === value}
+                  onChange={handleChange}
+                  {...validation}
+                />
+                <label className="form-check-label">{value}</label>
+              </div>
+            ))}
+          </div>
+        );
+      } else {
+        // Handle unsupported control types
+        currentRowInputs.push(
+          <div key={name} className="col-md-6">
+            <p>Unsupported control type: {controlType}</p>
+          </div>
+        );
+      }
+
+      // If we have two inputs in the current row, push them to the rows array and reset currentRowInputs
+      if (currentRowInputs.length === 2) {
+        rows.push(
+          <div key={name} className="row">
+            {currentRowInputs}
+          </div>
+        );
+        currentRowInputs = [];
+      }
+    });
+    return rows;
+  };
 
   return (
     <div className="container mt-4">
@@ -66,129 +177,8 @@ const UserForm: React.FC<UserFormProps> = ({ onSubmit }) => {
         <div className="col-md-6 offset-md-3">
           <form onSubmit={handleSubmit} className={styles.all}>
             <h2 className="text-center">Add User</h2>
-            <div className="row mb-3">
-              <div className="col">
-                <label htmlFor="firstName" className="form-label">
-                  First Name
-                </label>
-                <input
-                  type="text"
-                  className="form-control"
-                  id="firstName"
-                  name="firstName"
-                  value={formData.firstName}
-                  onChange={handleChange}
-                  pattern={namePattern.source}
-                  required
-                />
-              </div>
-              <div className="col">
-                <label htmlFor="middleName" className="form-label">
-                  Middle Name
-                </label>
-                <input
-                  type="text"
-                  className="form-control"
-                  id="middleName"
-                  name="middleName"
-                  value={formData.middleName}
-                  onChange={handleChange}
-                  pattern={namePattern.source}
-                  required
-                />
-              </div>
-              <div className="col">
-                <label htmlFor="thirdName" className="form-label">
-                  Third Name
-                </label>
-                <input
-                  type="text"
-                  className="form-control"
-                  id="thirdName"
-                  name="thirdName"
-                  value={formData.thirdName}
-                  onChange={handleChange}
-                  pattern={namePattern.source}
-                  required
-                />
-              </div>
-            </div>
-            <div className="mb-3">
-              <label htmlFor="email" className="form-label">
-                Email Address
-              </label>
-              <input
-                type="email"
-                className="form-control"
-                id="email"
-                name="email"
-                value={formData.email}
-                onChange={handleChange}
-                required
-              />
-            </div>
-            <div className="mb-3">
-              <label htmlFor="ssn" className="form-label">
-                SSN
-              </label>
-              <input
-                type="number"
-                className="form-control"
-                id="ssn"
-                name="ssn"
-                value={formData.ssn ? formData.ssn.toString() : ""}
-                onChange={handleChange}
-                required
-              />
-            </div>
 
-            <div className="row">
-              <div className="mb-3 col">
-                <label htmlFor="birthDate" className="form-label">
-                  Birth Date
-                </label>
-                <input
-                  type="date"
-                  className="form-control"
-                  id="birthDate"
-                  name="birthDate"
-                  value={formData.birthDate || ""}
-                  onChange={handleChange}
-                  required
-                />
-              </div>
-              <div className="mb-3 col">
-                <label htmlFor="gender" className="form-label">
-                  Gender
-                </label>
-                <select
-                  className="form-control"
-                  id="gender"
-                  name="gender"
-                  value={formData.gender || "male"}
-                  onChange={handleSelectChange}
-                  required
-                >
-                  <option value="male">Male</option>
-                  <option value="female">Female</option>
-                </select>
-              </div>
-            </div>
-
-            <div className="mb-3">
-              <label htmlFor="address" className="form-label">
-                Address
-              </label>
-              <input
-                type="text"
-                className="form-control"
-                id="address"
-                name="address"
-                value={formData.address}
-                onChange={handleChange}
-                required
-              />
-            </div>
+            {renderFormFields()}
             <div className="mb-3">
               <label htmlFor="image" className="form-label">
                 Image
@@ -197,6 +187,7 @@ const UserForm: React.FC<UserFormProps> = ({ onSubmit }) => {
                 type="file"
                 className="form-control"
                 id="image"
+                name="image"
                 onChange={handleImageChange}
                 accept="image/*"
               />

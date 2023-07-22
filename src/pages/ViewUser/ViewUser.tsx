@@ -5,16 +5,55 @@ import Typography from "@mui/material/Typography";
 import Grid from "@mui/material/Grid";
 import Paper from "@mui/material/Paper";
 import Box from "@mui/material/Box";
-import styles from "./ViewUser.module.css";
 import { Button } from "antd";
 import { EditOutlined } from "@ant-design/icons";
 import { useNavigate } from "react-router-dom";
 import { ClipLoader } from "react-spinners";
 import useGetRequest from "../../hooks/useFetchData";
+import styles from "./ViewUser.module.css";
 
-export default function ViewUser() {
+interface AttributeOption {
+  label: string;
+  control: string;
+  controlType: string;
+  placeholder?: string;
+  validation?: {
+    [key: string]: string | boolean;
+  };
+  values?: string[];
+}
+
+interface Attribute {
+  name: string;
+  type: string;
+  options?: AttributeOption;
+}
+
+interface OptionsResponse {
+  message: string;
+  result: {
+    attributes: Attribute[];
+  };
+}
+
+interface User {
+  _id: string;
+  firstName: string;
+  middleName: string;
+  thirdName: string;
+  image: string;
+  email: string;
+  address: string;
+  birthDate: string;
+  gender: string;
+  ssn: number;
+  [key: string]: string | number; // Index signature for additional properties
+}
+
+const ViewUser: React.FC = () => {
   const { id } = useParams();
   const [user, setUser] = useState<User | null>(null);
+  const [options, setOptions] = useState<Attribute[]>([]);
   const navigate = useNavigate();
   const { fetchedData, loading, error } = useGetRequest(
     "http://example.com/api/data"
@@ -22,6 +61,7 @@ export default function ViewUser() {
 
   useEffect(() => {
     fetchUser();
+    fetchOptions();
   }, []);
 
   const handleEditClick = () => {
@@ -39,18 +79,64 @@ export default function ViewUser() {
       });
   };
 
-  interface User {
-    _id: string;
-    firstName: string;
-    middleName: string;
-    thirdName: string;
-    image: string;
-    email: string;
-    address: string;
-    birthDate: string;
-    gender: string;
-    ssn: number;
-  }
+  const fetchOptions = async () => {
+    try {
+      const response = await axios.get<OptionsResponse>(
+        "http://localhost:8080/api/v1/users/options"
+      );
+      const attributes = response.data.result.attributes;
+      setOptions(attributes);
+    } catch (error) {
+      console.error("Error fetching options:", error);
+    }
+  };
+
+  const renderFormFields = () => {
+    if (loading) {
+      return <p>Loading...</p>;
+    }
+
+    const rows: JSX.Element[] = [];
+    options.forEach((attribute) => {
+      const { name, type, options: attributeOptions } = attribute;
+      const { label, controlType, values } = attributeOptions || {};
+
+      // If the attribute has values, render it as a label-value pair
+      if (values && user && user[name]) {
+        rows.push(
+          <Grid item xs={12} sm={4} key={name}>
+            <Typography variant="body1">
+              <strong>{label}:</strong> {user[name]}
+            </Typography>
+          </Grid>
+        );
+      } else if (
+        name === "firstName" ||
+        name === "middleName" ||
+        name === "thirdName"
+      ) {
+        rows.push(
+          <Grid item xs={12} sm={4} key={name}>
+            <Typography variant="body1">
+              <strong>{label}:</strong> {user ? user[name] : ""}
+            </Typography>
+          </Grid>
+        );
+      } else if (name === "birthDate") {
+        const formattedDate = user
+          ? new Date(user[name]).toLocaleDateString()
+          : "";
+        rows.push(
+          <Grid item xs={12} sm={4} key={name}>
+            <Typography variant="body1">
+              <strong>{label}:</strong> {formattedDate}
+            </Typography>
+          </Grid>
+        );
+      }
+    });
+    return rows;
+  };
 
   return user ? (
     <Box className={styles.container}>
@@ -62,21 +148,7 @@ export default function ViewUser() {
           <Grid item xs={12} textAlign="center">
             <img src={user.image} alt="User" className={styles.img} />
           </Grid>
-          <Grid item xs={12} sm={4}>
-            <Typography variant="body1">
-              <strong>First Name:</strong> {user.firstName}
-            </Typography>
-          </Grid>
-          <Grid item xs={12} sm={4}>
-            <Typography variant="body1">
-              <strong>Middle Name:</strong> {user.middleName}
-            </Typography>
-          </Grid>
-          <Grid item xs={12} sm={4}>
-            <Typography variant="body1">
-              <strong>Third Name:</strong> {user.thirdName}
-            </Typography>
-          </Grid>
+          {renderFormFields()}
           <Grid item xs={12}>
             <Typography variant="body1">
               <strong>Email:</strong> {user.email}
@@ -108,4 +180,6 @@ export default function ViewUser() {
       <ClipLoader color="#000" size={150} />
     </div>
   );
-}
+};
+
+export default ViewUser;

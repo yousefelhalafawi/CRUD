@@ -27,9 +27,9 @@ function AddPage() {
           // Navigate to "/"
           navigate("/");
         } else {
-          toast.error("Error: " + data.message);
           console.log(form_data);
           console.log(formData);
+          toast.error("Error: " + data.message);
         }
       })
       .catch((error) => {
