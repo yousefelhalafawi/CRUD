@@ -19,6 +19,7 @@ import {
   faNewspaper,
   faTrashAlt,
   faSignOutAlt,
+  faSearch,
 } from "@fortawesome/free-solid-svg-icons";
 import { Menu as MenuIcon } from "@mui/icons-material";
 
@@ -107,6 +108,21 @@ const MySidebar = () => {
             </ListItemIcon>
             <ListItemText primary="Add User" />
           </ListItem>
+          <ListItem
+            button
+            component={Link}
+            to="/search"
+            selected={isActive("/search")}
+            style={getListItemStyles("/search")}
+          >
+            <ListItemIcon>
+              <FontAwesomeIcon
+                icon={faSearch}
+                style={getIconStyles("/search")}
+              />
+            </ListItemIcon>
+            <ListItemText primary="search" />
+          </ListItem>
           <ListItem button disabled>
             <ListItemIcon>
               <FontAwesomeIcon icon={faBox} />
@@ -137,21 +153,7 @@ const MySidebar = () => {
             </ListItemIcon>
             <ListItemText primary="Posts" />
           </ListItem>
-          <ListItem
-            button
-            component={Link}
-            to="/auth-users"
-            selected={isActive("/auth-users")}
-            style={getListItemStyles("/auth-users")}
-          >
-            <ListItemIcon>
-              <FontAwesomeIcon
-                icon={faUser}
-                style={getIconStyles("/auth-users")}
-              />
-            </ListItemIcon>
-            <ListItemText primary="auth-users" />
-          </ListItem>
+
           <ListItem button disabled>
             <ListItemIcon>
               <FontAwesomeIcon icon={faSignOutAlt} />

@@ -9,59 +9,20 @@ import { Button } from "antd";
 import { EditOutlined } from "@ant-design/icons";
 import { useNavigate } from "react-router-dom";
 import { ClipLoader } from "react-spinners";
-import useGetRequest from "../../hooks/useFetchData";
 import styles from "./ViewUser.module.css";
-
-interface AttributeOption {
-  label: string;
-  control: string;
-  controlType: string;
-  placeholder?: string;
-  validation?: {
-    [key: string]: string | boolean;
-  };
-  values?: string[];
-}
-
-interface Attribute {
-  name: string;
-  type: string;
-  options?: AttributeOption;
-}
-
-interface OptionsResponse {
-  message: string;
-  result: {
-    attributes: Attribute[];
-  };
-}
-
-interface User {
-  _id: string;
-  firstName: string;
-  middleName: string;
-  thirdName: string;
-  image: string;
-  email: string;
-  address: string;
-  birthDate: string;
-  gender: string;
-  ssn: number;
-  [key: string]: string | number; // Index signature for additional properties
-}
+import { User, Attribute, OptionsResponse } from "../../interfaces/interfaces";
+import { fetchOptions, renderFormFields } from "./ViewUserOptions"; // Import the functions from userUtils
+const BASE_URL = process.env.REACT_APP_BASE_URL;
 
 const ViewUser: React.FC = () => {
   const { id } = useParams();
   const [user, setUser] = useState<User | null>(null);
   const [options, setOptions] = useState<Attribute[]>([]);
   const navigate = useNavigate();
-  const { fetchedData, loading, error } = useGetRequest(
-    "http://example.com/api/data"
-  );
 
   useEffect(() => {
     fetchUser();
-    fetchOptions();
+    fetchOptions().then((attributes) => setOptions(attributes));
   }, []);
 
   const handleEditClick = () => {
@@ -70,72 +31,13 @@ const ViewUser: React.FC = () => {
 
   const fetchUser = () => {
     axios
-      .get("http://localhost:8080/api/v1/users/" + id)
+      .get(`${BASE_URL}/users/` + id)
       .then((response) => {
         setUser(response.data.result.data);
       })
       .catch((error) => {
         console.error(error);
       });
-  };
-
-  const fetchOptions = async () => {
-    try {
-      const response = await axios.get<OptionsResponse>(
-        "http://localhost:8080/api/v1/users/options"
-      );
-      const attributes = response.data.result.attributes;
-      setOptions(attributes);
-    } catch (error) {
-      console.error("Error fetching options:", error);
-    }
-  };
-
-  const renderFormFields = () => {
-    if (loading) {
-      return <p>Loading...</p>;
-    }
-
-    const rows: JSX.Element[] = [];
-    options.forEach((attribute) => {
-      const { name, type, options: attributeOptions } = attribute;
-      const { label, controlType, values } = attributeOptions || {};
-
-      // If the attribute has values, render it as a label-value pair
-      if (values && user && user[name]) {
-        rows.push(
-          <Grid item xs={12} sm={4} key={name}>
-            <Typography variant="body1">
-              <strong>{label}:</strong> {user[name]}
-            </Typography>
-          </Grid>
-        );
-      } else if (
-        name === "firstName" ||
-        name === "middleName" ||
-        name === "thirdName"
-      ) {
-        rows.push(
-          <Grid item xs={12} sm={4} key={name}>
-            <Typography variant="body1">
-              <strong>{label}:</strong> {user ? user[name] : ""}
-            </Typography>
-          </Grid>
-        );
-      } else if (name === "birthDate") {
-        const formattedDate = user
-          ? new Date(user[name]).toLocaleDateString()
-          : "";
-        rows.push(
-          <Grid item xs={12} sm={4} key={name}>
-            <Typography variant="body1">
-              <strong>{label}:</strong> {formattedDate}
-            </Typography>
-          </Grid>
-        );
-      }
-    });
-    return rows;
   };
 
   return user ? (
@@ -148,7 +50,8 @@ const ViewUser: React.FC = () => {
           <Grid item xs={12} textAlign="center">
             <img src={user.image} alt="User" className={styles.img} />
           </Grid>
-          {renderFormFields()}
+          {renderFormFields(options, user)}{" "}
+          {/* Pass options and user as arguments */}
           <Grid item xs={12}>
             <Typography variant="body1">
               <strong>Email:</strong> {user.email}

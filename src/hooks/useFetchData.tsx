@@ -1,11 +1,8 @@
-import { useState, useEffect, SetStateAction } from "react";
+import { useState, useEffect } from "react";
 
-interface FetchedData {
-  data: {
-    result: {
-      data: any; // Adjust the type as per your data structure
-    };
-  };
+// Define the generic type for the fetched data
+export interface FetchedData {
+  data: any;
 }
 
 const useGetRequest = (url: string) => {
@@ -14,6 +11,8 @@ const useGetRequest = (url: string) => {
   const [error, setError] = useState<Error | null>(null);
 
   useEffect(() => {
+    let isMounted = true; // To check if the component is still mounted
+
     const fetchData = async () => {
       try {
         const response = await fetch(url);
@@ -21,15 +20,24 @@ const useGetRequest = (url: string) => {
           throw new Error("Request failed");
         }
         const jsonData = await response.json();
-        setData(jsonData);
-        setLoading(false);
+        if (isMounted) {
+          setData(jsonData);
+          setLoading(false);
+        }
       } catch (error) {
-        setError(error as SetStateAction<Error | null>); // Cast 'error' as 'SetStateAction<Error | null>'
-        setLoading(false);
+        if (isMounted) {
+          setError(error as Error); // Explicitly cast error to Error type
+          setLoading(false);
+        }
       }
     };
 
     fetchData();
+
+    return () => {
+      // Clean up function to set isMounted to false when the component unmounts
+      isMounted = false;
+    };
   }, [url]);
 
   return { fetchedData, loading, error };

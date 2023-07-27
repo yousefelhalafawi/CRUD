@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useRef } from "react";
+import { useEffect, useState, useRef } from "react";
 import axios from "axios";
 import { toast } from "react-toastify";
 import { useParams } from "react-router-dom";
@@ -8,34 +8,17 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faPen } from "@fortawesome/free-solid-svg-icons";
 import styles from "./UserPage.module.css";
 import { ClipLoader } from "react-spinners";
-
+import { User, Attribute } from "../../interfaces/interfaces";
 import { useNavigate } from "react-router-dom";
-
-//custom hooks
 import usePatchRequest from "../../hooks/usePatchRequest";
-import useGetRequest from "../../hooks/useFetchData";
+import { fetchOptions, renderFormFields } from "./EditUserOptions"; // Replace 'path/to/formUtils' with the actual path to your formUtils.ts file
 
-const UserPage = () => {
+const BASE_URL = process.env.REACT_APP_BASE_URL;
+const EditUserPage = () => {
   const { id } = useParams();
-  const { patchData } = usePatchRequest(
-    "http://localhost:8080/api/v1/users/" + id
-  );
+  const { patchData } = usePatchRequest(`${BASE_URL}/users/` + id);
 
   const navigate = useNavigate();
-  interface User {
-    _id: string;
-    firstName: string;
-    middleName: string;
-    thirdName: string;
-    image: string;
-    email: string;
-    address: string;
-    birthDate: string;
-    gender: string;
-    ssn: number;
-  }
-  const [effect, setEffect] = useState(true);
-
   const [user, setUser] = useState<User | null>(null);
   const firstNameRef = useRef<HTMLInputElement>(null);
   const middleNameRef = useRef<HTMLInputElement>(null);
@@ -44,13 +27,23 @@ const UserPage = () => {
   const fileRef = useRef<HTMLInputElement>(null);
   const subref = useRef<HTMLInputElement>(null);
 
+  // Options state
+  const [options, setOptions] = useState<Attribute[]>([]);
+  const [loadingOptions, setLoadingOptions] = useState(true);
+  const [changes, setChanges] = useState(false);
+
   useEffect(() => {
     fetchUser();
-  }, [effect]);
+    fetchOptions().then((options: Attribute[]) => {
+      setOptions(options);
+      setLoadingOptions(false);
+    });
+  }, []);
 
+  // Fetch user data from the server
   const fetchUser = () => {
     axios
-      .get("http://localhost:8080/api/v1/users/" + id)
+      .get(`${BASE_URL}/users/` + id)
       .then((response) => {
         setUser(response.data.result.data);
       })
@@ -60,32 +53,34 @@ const UserPage = () => {
   };
 
   const handleSave = () => {
+    // Check if any changes have been made before submitting
+    if (changes === false) {
+      toast.error("No changes made. Cannot save.");
+      return;
+    }
+
     const updatedData = {
       firstName: firstNameRef.current?.value || "",
       middleName: middleNameRef.current?.value || "",
       thirdName: thirdNameRef.current?.value || "",
       address: addressRef.current?.value || "",
-      email: user?.email,
-      birthDate: user?.birthDate,
-      gender: user?.gender,
-      ssn: user?.ssn,
     };
 
     patchData(updatedData)
-      .then(() => {
+      .then((res) => {
         toast.success("User Updated successfully");
         navigate(`/viewUser/` + user?._id);
       })
       .catch((error) => {
-        console.error(error);
-        toast.error("Failed");
+        toast.error(error.message);
       });
   };
+
   const handleCancel = () => {
-    navigate(1);
+    navigate("/search");
   };
 
-  const handleUpdate = () => {
+  const handleUpdateImage = () => {
     if (
       fileRef.current &&
       fileRef.current.files &&
@@ -94,21 +89,36 @@ const UserPage = () => {
       const formData = new FormData();
       formData.append("image", fileRef.current.files[0]);
 
-      const updatedData = {
-        // Add other fields to the updatedData object if needed
-      };
+      const updatedData = {};
 
       formData.append("data", JSON.stringify(updatedData));
       axios
-        .patch("http://localhost:8080/api/v1/users/img-upload/" + id, formData)
+        .patch(`${BASE_URL}/users/img-upload/` + id, formData)
         .then((response) => {
+          setChanges(true);
           toast.success("image Updated successfully");
-          setEffect(!effect);
         })
         .catch((error) => {
           toast.error("Failed");
         });
     } else {
+      toast.error("Please select an image to update.");
+    }
+  };
+
+  // Get the ref for each input field
+  const getInputRef = (name: string) => {
+    switch (name) {
+      case "firstName":
+        return firstNameRef;
+      case "middleName":
+        return middleNameRef;
+      case "thirdName":
+        return thirdNameRef;
+      case "address":
+        return addressRef;
+      default:
+        return null;
     }
   };
 
@@ -128,8 +138,7 @@ const UserPage = () => {
                 ref={fileRef}
                 onChange={() => {
                   subref.current?.click();
-                  console.log("3333333333333");
-                  handleUpdate();
+                  handleUpdateImage();
                 }}
               />
               <input type="submit" hidden className="btn m-0" ref={subref} />
@@ -137,7 +146,6 @@ const UserPage = () => {
               <FontAwesomeIcon
                 icon={faPen}
                 onClick={() => {
-                  console.log("111111111111111");
                   fileRef.current?.click();
                 }}
               />
@@ -149,72 +157,14 @@ const UserPage = () => {
       <Container className={styles.form}>
         <div className={styles.all}>
           <div className="row g-2">
-            <div className="col-lg-4 col-12">
-              <label htmlFor="firstName">First Name</label>
-              <input
-                type="text"
-                id="firstName"
-                className="form-control"
-                defaultValue={user.firstName}
-                ref={firstNameRef}
-                placeholder="First Name"
-              />
-            </div>
-            <div className="col-lg-4 col-12">
-              <label htmlFor="middleName">Middle Name</label>
-              <input
-                type="text"
-                id="middleName"
-                className="form-control"
-                defaultValue={user.middleName}
-                ref={middleNameRef}
-                placeholder="Middle Name"
-              />
-            </div>
-            <div className="col-lg-4 col-12">
-              <label htmlFor="thirdName">Third Name</label>
-              <input
-                type="text"
-                id="thirdName"
-                className="form-control"
-                defaultValue={user.thirdName}
-                ref={thirdNameRef}
-                placeholder="Third Name"
-              />
-            </div>
-            <div className="col-lg-6 col-12">
-              <label htmlFor="email">Email</label>
-              <input
-                type="email"
-                id="email"
-                className="form-control"
-                defaultValue={user.email}
-                disabled
-                placeholder="Email"
-              />
-            </div>
-            <div className="col-lg-6 col-12">
-              <label htmlFor="ssn">SSN</label>
-              <input
-                type="text"
-                id="ssn"
-                className="form-control"
-                defaultValue={user.ssn.toString()}
-                disabled
-                placeholder="SSN"
-              />
-            </div>
-            <div className="col-12">
-              <label htmlFor="address">Address</label>
-              <input
-                type="text"
-                id="address"
-                className="form-control"
-                defaultValue={user.address}
-                ref={addressRef}
-                placeholder="Address"
-              />
-            </div>
+            {/* Render the form fields */}
+            {renderFormFields(
+              user,
+              options,
+              getInputRef,
+              setChanges,
+              loadingOptions
+            )}
 
             <div className="col-12 mb-5 d-flex justify-content-center">
               <button
@@ -229,7 +179,7 @@ const UserPage = () => {
                 className="btn btn-danger ms-1 w-auto"
                 onClick={handleCancel}
               >
-                cancel
+                Cancel
               </button>
             </div>
           </div>
@@ -243,4 +193,4 @@ const UserPage = () => {
   );
 };
 
-export default UserPage;
+export default EditUserPage;

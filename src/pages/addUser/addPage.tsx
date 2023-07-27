@@ -5,6 +5,7 @@ import UserForm from "../../components/addUserForm/userform";
 import styles from "./AddPage.module.css";
 function AddPage() {
   const navigate = useNavigate();
+  const BASE_URL = process.env.REACT_APP_BASE_URL;
 
   const handleSubmit = (formData: any) => {
     const form_data = new FormData();
@@ -12,7 +13,7 @@ function AddPage() {
       form_data.append(key, formData[key]);
     });
 
-    fetch("http://localhost:8080/api/v1/users/", {
+    fetch(`${BASE_URL}/users/`, {
       method: "POST",
       body: form_data,
     })

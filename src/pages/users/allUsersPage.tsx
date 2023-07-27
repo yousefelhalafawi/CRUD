@@ -4,20 +4,13 @@ import { ClipLoader } from "react-spinners";
 import "react-toastify/dist/ReactToastify.css";
 import { Container } from "@mui/material";
 import styles from "./UsersPage.module.css";
-
 import UsersTable from "../../components/UsersTable/UsersTable";
-interface User {
-  _id: string;
-  firstName: string;
-  middleName: string;
-  thirdName: string;
-  ssn: number;
-  image: string;
-}
+import { User } from "../../interfaces/interfaces";
 
 function UsersPage() {
   const [users, setUsers] = useState<User[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
+  const BASE_URL = process.env.REACT_APP_BASE_URL;
 
   useEffect(() => {
     fetchUsers();
@@ -25,14 +18,14 @@ function UsersPage() {
 
   const fetchUsers = () => {
     axios
-      .get("http://localhost:8080/api/v1/users/")
+      .get(`${BASE_URL}/users/`)
       .then((response) => {
         setUsers(response.data.result.data);
-        setLoading(false); // Set loading to false once the data is fetched
+        setLoading(false);
       })
       .catch((error) => {
         console.error(error);
-        setLoading(false); // Set loading to false in case of an error
+        setLoading(false);
       });
   };
 
@@ -45,7 +38,7 @@ function UsersPage() {
       ) : (
         <div className={styles.test}>
           <h1 className={styles.container}>Users</h1>
-          {users.length > 0 ? (
+          {users.length > 0 ? ( //check users lenght
             <Container className={styles.all}>
               <UsersTable />
             </Container>

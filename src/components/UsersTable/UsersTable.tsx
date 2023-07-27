@@ -9,6 +9,7 @@ import {
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
+const BASE_URL = process.env.REACT_APP_BASE_URL;
 
 const UsersTable = () => {
   const [users, setUsers] = useState<{ firstName: string }[]>([]);
@@ -25,7 +26,7 @@ const UsersTable = () => {
     setLoading(true);
     const { current, pageSize } = pagination;
     axios
-      .get("http://localhost:8080/api/v1/users/", {
+      .get(`${BASE_URL}/users/?s=100`, {
         params: {
           page: current,
           limit: pageSize,
@@ -47,7 +48,7 @@ const UsersTable = () => {
       navigate(`/viewUser/` + userId);
     } else if (action === "delete") {
       axios
-        .delete(`http://localhost:8080/api/v1/users/${userId}`)
+        .delete(`${BASE_URL}/users/${userId}`)
         .then((response) => {
           fetchUsers();
           toast.success("User deleted successfully");
