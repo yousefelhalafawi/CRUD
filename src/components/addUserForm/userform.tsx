@@ -11,6 +11,7 @@ interface UserFormProps {
 interface FormData {
   [key: string]: string | number | null | File;
 }
+const BASE_URL = process.env.REACT_APP_BASE_URL;
 
 const UserForm: React.FC<UserFormProps> = ({ onSubmit }) => {
   const [formData, setFormData] = useState<FormData>({});
@@ -24,7 +25,7 @@ const UserForm: React.FC<UserFormProps> = ({ onSubmit }) => {
   const fetchOptions = async () => {
     try {
       const response = await axios.get<OptionsResponse>(
-        "http://localhost:8080/api/v1/users/options"
+        `${BASE_URL}/users/options`
       );
       const attributes = response.data.result.attributes;
       const initialFormData: FormData = {};
@@ -72,8 +73,6 @@ const UserForm: React.FC<UserFormProps> = ({ onSubmit }) => {
       <div className="row">
         <div className="col-md-6 offset-md-3">
           <form onSubmit={handleSubmit} className={styles.all}>
-            <h2 className="text-center">Add User</h2>
-
             {/* Use the new FormFieldsRenderer component from options */}
             <FormFieldsRenderer
               options={options}

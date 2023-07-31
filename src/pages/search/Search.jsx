@@ -1,65 +1,99 @@
+import React, { useState, useEffect } from "react";
 import axios from "axios";
-import { useCallback, useEffect, useState } from "react";
-import { Spinner } from "react-bootstrap";
+import { useSelector } from "react-redux";
+import { Button, Modal, Spinner } from "react-bootstrap";
+import { toast } from "react-toastify";
 import TableComponent from "./TableComponent";
 import PaginationComponent from "./PaginationComponent";
 import FormInputs from "./FormInputs";
-import { toast } from "react-toastify";
+import AddPage from "../addUser/addPage";
 
 const BASE_URL = process.env.REACT_APP_BASE_URL;
 
-function Search() {
+const Search = () => {
+  const [addModalShow, setAddModalShow] = useState(false);
   const [loading, setLoading] = useState(true);
   const [data, setData] = useState([]);
   const [filterData, setFilterData] = useState({});
   const [page, setPage] = useState(1);
   const [perPage, setPerPage] = useState(5);
   const [count, setCount] = useState(1);
-  const [sort, setSort] = useState("");
-  const [total, settotal] = useState(null);
+  const [total, setTotal] = useState(null);
+  const [sortArr, setSortArr] = useState([]);
+  const renderState = useSelector((state) => state.tableRender.render);
+
+  const tableHeaders = [
+    { key: "firstName", label: "First Name" },
+    { key: "middleName", label: "Middle Name" },
+    { key: "thirdName", label: "Third Name" },
+    { key: "email", label: "Email" },
+    { key: "ssn", label: "SSN" },
+    { key: "gender", label: "Gender" },
+    { key: "actions", label: "Actions" },
+  ];
+
+  const [selectedHeaders, setSelectedHeaders] = useState(tableHeaders);
+
+  const handleHeaderCheckboxChange = (headerKey) => {
+    if (selectedHeaders.some((header) => header.key === headerKey)) {
+      setSelectedHeaders(
+        selectedHeaders.filter((header) => header.key !== headerKey)
+      );
+    } else {
+      const header = tableHeaders.find((header) => header.key === headerKey);
+      setSelectedHeaders([...selectedHeaders, header]);
+    }
+  };
+
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setFilterData({
       ...filterData,
       [name]: value,
     });
+  };
 
-    console.log(filterData);
+  const handelSort = (key) => {
+    if (sortArr.includes(key)) {
+      const updatedSortArr = sortArr.filter((item) => item !== key);
+      setSortArr([...updatedSortArr, `-${key}`]);
+    } else if (sortArr.includes(`-${key}`)) {
+      const updatedSortArr = sortArr.filter((item) => item !== `-${key}`);
+      setSortArr([...updatedSortArr, key]);
+    } else {
+      setSortArr([...sortArr, key]);
+    }
   };
-  const sortFun = (e) => {
-    setSort(e);
+
+  const fetchData = (filterDataObj = {}) => {
+    setLoading(true);
+    axios
+      .post(
+        `${BASE_URL}/users/search?s=${perPage}&p=${page}&sort=${sortArr.join(
+          " "
+        )}`,
+        filterDataObj
+      )
+      .then((res) => {
+        setData(res.data.result.data);
+        setCount(res.data.result.pagesCount);
+        setTotal(res.data.result.total);
+        setLoading(false);
+      })
+      .catch((err) => {
+        console.log(err);
+      });
   };
-  const fetchData = useCallback(
-    (filterDataObj = {}) => {
-      setLoading(true);
-      axios
-        .post(
-          `${BASE_URL}/users/search?s=${perPage}&p=${page}${sort}`,
-          filterDataObj
-        )
-        .then((res) => {
-          setData(res.data.result.data);
-          setCount(res.data.result.pagesCount);
-          settotal(res.data.result.total);
-          setLoading(false);
-        })
-        .catch((err) => {
-          console.log(err);
-        });
-    },
-    [page, perPage, sort]
-  );
-  // in first render only
+
   useEffect(() => {
     fetchData(filterData);
-  }, [fetchData, page, sort, perPage]);
+  }, [page, perPage, sortArr, renderState]);
 
   const handleDelete = (id) => {
     axios
       .delete(`${BASE_URL}/users/${id}`)
       .then((response) => {
         toast.success("User deleted successfully");
-        // Call fetchData to refresh the data after deletion
         fetchData();
       })
       .catch((error) => {
@@ -67,36 +101,92 @@ function Search() {
       });
   };
 
-  // on click search button
   const handleSearchClick = (e) => {
     e.preventDefault();
     fetchData(filterData);
   };
-  // on click reset button
+
   const handleResetClick = () => {
     setFilterData({});
     fetchData();
   };
+
   const handelPageRow = (e) => {
     setPerPage(e);
   };
+
   const nextPage = () => {
     setPage(page + 1);
   };
+
   const prevPage = () => {
     setPage(page - 1);
   };
+
   const onCLickPage = (e) => {
     setPage(e);
   };
+
   return (
-    <div className="px-5 min-vh-100">
+    <div className="px-5">
+      <div className="d-flex justify-content-between">
+        <h1>User Control</h1>
+        <Button
+          className="mx-3"
+          variant="primary"
+          onClick={() => setAddModalShow(true)}
+        >
+          Add
+        </Button>
+      </div>
       <FormInputs
         handleSearchClick={handleSearchClick}
         handleInputChange={handleInputChange}
         handleResetClick={handleResetClick}
         filterData={filterData}
       />
+
+      <div className="d-flex mb-2">
+        <h5>Show & Sort Columns:</h5>
+
+        {tableHeaders.map((header) => {
+          if (header.key === "actions") {
+            return null; // Don't render the Actions header here
+          }
+
+          return (
+            <div key={header.key} className="form-check mr-3">
+              <input
+                type="checkbox"
+                className="form-check-input m-1"
+                id={header.key}
+                checked={selectedHeaders.some(
+                  (selectedHeader) => selectedHeader.key === header.key
+                )}
+                onChange={() => handleHeaderCheckboxChange(header.key)}
+              />
+              <label className="form-check-label" htmlFor={header.key}>
+                {header.label}
+              </label>
+            </div>
+          );
+        })}
+        <div className="form-check">
+          <input
+            type="checkbox"
+            className="form-check-input m-1"
+            id="actions"
+            checked={selectedHeaders.some(
+              (selectedHeader) => selectedHeader.key === "actions"
+            )}
+            onChange={() => handleHeaderCheckboxChange("actions")}
+          />
+          <label className="form-check-label" htmlFor="actions">
+            Actions
+          </label>
+        </div>
+      </div>
+
       {loading ? (
         <div
           style={{ height: "600px" }}
@@ -110,7 +200,17 @@ function Search() {
         </div>
       ) : data.length > 0 ? (
         <>
-          <TableComponent data={data} sortFun={sortFun} onDelete={handleDelete} />
+          <p className="m-0">
+            {" "}
+            You can sort rows based on clicking table header{" "}
+          </p>
+          <TableComponent
+            data={data}
+            onDelete={handleDelete}
+            handelSort={handelSort}
+            sortArr={sortArr}
+            tableHeaders={selectedHeaders}
+          />
           {count > 1 && (
             <PaginationComponent
               page={page}
@@ -127,8 +227,20 @@ function Search() {
       ) : (
         <h1>No Data found</h1>
       )}
+      <Modal
+        size="lg"
+        show={addModalShow}
+        onHide={() => setAddModalShow(false)}
+      >
+        <Modal.Header closeButton>
+          <Modal.Title>Add User</Modal.Title>
+        </Modal.Header>
+        <Modal.Body>
+          <AddPage />
+        </Modal.Body>
+      </Modal>
     </div>
   );
-}
+};
 
 export default Search;

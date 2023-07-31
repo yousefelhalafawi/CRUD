@@ -2,22 +2,21 @@
   display: flex;
   justify-content: center;
   align-items: center;
-  height: 100vh;
 }
 
 .paper {
   padding: 16px;
-  width: 80vw;
+  /* width: 80vw; */
 }
 .img {
-  width: 20vw;
+  /* width: 20vw; */
   border-radius: 20%;
 }
 .btn {
   margin-left: 90%;
 }
 .test2 {
-  height: 100vh;
+  /* height: 100vh; */
   display: flex;
   justify-content: center;
   align-items: center;

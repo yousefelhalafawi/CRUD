@@ -13,9 +13,10 @@ import styles from "./ViewUser.module.css";
 import { User, Attribute, OptionsResponse } from "../../interfaces/interfaces";
 import { fetchOptions, renderFormFields } from "./ViewUserOptions"; // Import the functions from userUtils
 const BASE_URL = process.env.REACT_APP_BASE_URL;
-
-const ViewUser: React.FC = () => {
-  const { id } = useParams();
+interface ViewUserPageProps {
+  id: string;
+}
+const ViewUserPage: React.FC<ViewUserPageProps> = ({ id }) => {
   const [user, setUser] = useState<User | null>(null);
   const [options, setOptions] = useState<Attribute[]>([]);
   const navigate = useNavigate();
@@ -68,14 +69,14 @@ const ViewUser: React.FC = () => {
             </Typography>
           </Grid>
         </Grid>
-        <Button
+        {/* <Button
           type="primary"
           className={styles.btn}
           icon={<EditOutlined />}
           onClick={handleEditClick}
         >
           Edit
-        </Button>
+        </Button> */}
       </Paper>
     </Box>
   ) : (
@@ -85,4 +86,4 @@ const ViewUser: React.FC = () => {
   );
 };
 
-export default ViewUser;
+export default ViewUserPage;

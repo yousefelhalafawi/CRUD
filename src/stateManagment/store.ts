@@ -1,9 +1,9 @@
 import { configureStore } from '@reduxjs/toolkit';
-import navigationReducer from './navigationSlice';
+import tableRenderReducer from './renderTableSlice';
 
 const store = configureStore({
   reducer: {
-    navigation: navigationReducer,
+    tableRender: tableRenderReducer,
   },
 });
 

@@ -69,9 +69,10 @@ export const renderFormFields = (
       return null;
     } else {
       return (
-        <div key={name} className="col-lg-6 col-12">
-          <p>Unsupported control type: {controlType}</p>
-        </div>
+        <></>
+        // <div key={name} className="col-lg-6 col-12">
+        //   <p>Unsupported control type: {controlType}</p>
+        // </div>
       );
     }
   });

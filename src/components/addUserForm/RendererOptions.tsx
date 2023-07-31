@@ -52,39 +52,28 @@ const FormFieldsRenderer: React.FC<FormFieldsRendererProps> = ({
               {label}
             </label>
             <input type={controlType} {...inputProps} />
-            {validation?.min && validation?.max && (
-              <small className="form-text">
-                Min: {validation.min}, Max: {validation.max}
-              </small>
-            )}
           </div>
         );
       } else if (controlType === "radio" && name === "gender") {
         currentRowInputs.push(
           <div key={name} className="col-md-6 mb-3">
             <label className="form-label">{label}</label>
-            {attributeOptions?.values?.map((value: string) => (
-              <div key={value} className="form-check">
-                <input
-                  type="radio"
-                  className="form-check-input"
-                  name={name}
-                  value={value}
-                  checked={formData[name] === value}
-                  onChange={handleChange}
-                  {...validation}
-                />
-                <label className="form-check-label">{value}</label>
-              </div>
-            ))}
+            <select {...inputProps}>
+              {attributeOptions?.values?.map((value: string) => (
+                <option key={value} value={value}>
+                  {value}
+                </option>
+              ))}
+            </select>
           </div>
         );
       } else {
-        currentRowInputs.push(
-          <div key={name} className="col-md-6">
-            <p>Unsupported control type: {controlType}</p>
-          </div>
-        );
+        // currentRowInputs.push(
+        //   <div key={name} className="col-md-6">
+        //     <p>Unsupported control type: {controlType}</p>
+        //   </div>
+        // );
+        <></>;
       }
 
       if (currentRowInputs.length === 2) {

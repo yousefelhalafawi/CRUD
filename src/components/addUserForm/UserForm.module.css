@@ -1,7 +1,6 @@
 .gridContainer {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
-  gap: 16px;
 }
 
 .gridItem {
@@ -17,6 +16,5 @@
 
 .container {
   background-color: #eee;
-  /* width: 100vw; */
-  height: 100%;
+  width: 100%;
 }

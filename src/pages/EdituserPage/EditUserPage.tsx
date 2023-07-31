@@ -14,8 +14,16 @@ import usePatchRequest from "../../hooks/usePatchRequest";
 import { fetchOptions, renderFormFields } from "./EditUserOptions"; // Replace 'path/to/formUtils' with the actual path to your formUtils.ts file
 
 const BASE_URL = process.env.REACT_APP_BASE_URL;
-const EditUserPage = () => {
-  const { id } = useParams();
+interface EditUserPageProps {
+  id: string;
+  handleCancelEdit: () => void;
+  handleEdit: () => void;
+}
+const EditUserPage: React.FC<EditUserPageProps> = ({
+  id,
+  handleCancelEdit,
+  handleEdit,
+}) => {
   const { patchData } = usePatchRequest(`${BASE_URL}/users/` + id);
 
   const navigate = useNavigate();
@@ -69,15 +77,17 @@ const EditUserPage = () => {
     patchData(updatedData)
       .then((res) => {
         toast.success("User Updated successfully");
-        navigate(`/viewUser/` + user?._id);
+        navigate("/search");
+        handleEdit();
       })
       .catch((error) => {
-        toast.error(error.message);
+        toast.error("Invalid editting data");
       });
   };
 
   const handleCancel = () => {
     navigate("/search");
+    handleCancelEdit();
   };
 
   const handleUpdateImage = () => {

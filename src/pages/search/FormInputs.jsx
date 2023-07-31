@@ -7,7 +7,7 @@ function FormInputs({
   filterData,
 }) {
   return (
-    <Form className="my-5" onSubmit={handleSearchClick}>
+    <Form className="mt-2 mb-3" onSubmit={handleSearchClick}>
       <div className="d-flex mb-3">
         <Form.Control
           onChange={handleInputChange}
